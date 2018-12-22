@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
     }
     fun preProcess(){
-        mbIn = loadBitmap(R.drawable.imagedemo);
+        mbIn = loadBitmap(R.drawable.lion);
         mOutBitmap =
                 Bitmap.createBitmap(mbIn!!.getWidth(), mbIn!!.getHeight(), mbIn!!.getConfig());
 

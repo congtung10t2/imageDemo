@@ -11,7 +11,7 @@
     <ImageView
             android:layout_width="200dp"
             android:layout_height="200dp"
-            android:background="@drawable/imagedemo"
+            android:background="@drawable/lion"
              android:id="@+id/source"/>
     <ImageView
             android:layout_width="wrap_content"

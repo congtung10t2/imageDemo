@@ -17,6 +17,10 @@ import android.graphics.Canvas
 import android.os.Environment
 import android.support.v8.renderscript.Allocation
 import android.support.v8.renderscript.RenderScript
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.util.Log
+import android.widget.TextView
 import com.example.tunghoang.ScriptC_singlesource
 import java.io.File
 import java.io.FileNotFoundException
@@ -25,18 +29,13 @@ import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
-
-    var mOutBitmap : Bitmap? = null;
-    var mbIn: Bitmap? = null;
-    private var mInAllocation: Allocation? = null;
-    private var mOutAllocation: Allocation? = null;
-    private var mScript: ScriptC_singlesource? = null;
-
-
+    private var classifier: ImageClassifier? = null
+    var textView: TextView? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        textView = findViewById(R.id.textView)
         var btn = findViewById<Button>(R.id.button);
         preProcess();
 
@@ -46,33 +45,44 @@ class MainActivity : AppCompatActivity() {
 
     }
     fun preProcess(){
-        mbIn = loadBitmap(R.drawable.lion);
-        mOutBitmap =
-                Bitmap.createBitmap(mbIn!!.getWidth(), mbIn!!.getHeight(), mbIn!!.getConfig());
+        var image = findViewById<ImageView>(R.id.source);
+        try {
+            classifier = ImageClassifierFloatMobileNet(this);
+        } catch (e:IOException) {
+            Log.d("fuck", "Failed to load", e);
+            classifier = null;
+        }
+        classifier!!.useCPU();
+    }
 
-        val RS: RenderScript = RenderScript.create(this)
-        mScript = ScriptC_singlesource(RS);
-        mInAllocation = Allocation.createFromBitmap(RS, mbIn, Allocation.MipmapControl.MIPMAP_NONE,
-            Allocation.USAGE_SCRIPT);
+    private fun showToast(s: String) {
+        val builder = SpannableStringBuilder()
+        val str1 = SpannableString(s)
+        builder.append(str1)
+        showToast(builder)
+    }
 
-        mOutAllocation = Allocation.createFromBitmap(
-            RS, mOutBitmap, Allocation.MipmapControl.MIPMAP_NONE,
-            android.renderscript.Allocation.USAGE_SCRIPT
-        );
+    private fun showToast(builder: SpannableStringBuilder) {
+        val activity = this
+        if (activity != null) {
+            activity!!.runOnUiThread(
+                Runnable { textView!!.setText(builder, TextView.BufferType.SPANNABLE) })
+        }
     }
 
 
-
     public fun fucku() {
-
+        val bitmap =loadBitmap(R.drawable.imagedemo);
         // var bm2 = blurBitmap(bm, 5.0f, this)
-        var b = findViewById<ImageView>(R.id.result);
+        val textToShow = SpannableStringBuilder()
+        val bitmap2 = Bitmap.createScaledBitmap(bitmap, 224, 224, false)
+        val a = bitmap2.byteCount;
+        classifier!!.classifyFrame(bitmap2, textToShow)
 
-        mScript!!.invoke_process(mInAllocation, mOutAllocation)
-        mOutAllocation!!.copyTo(mOutBitmap);
-        b.setImageBitmap(mOutBitmap);
+        textView = findViewById(R.id.textView)
+        showToast(textToShow);
 
-        b.invalidate();
+
     }
 
     private fun loadBitmap(resource: Int): Bitmap {

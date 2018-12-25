@@ -41,7 +41,9 @@ uchar4 RS_KERNEL tfm(uchar4 in, uint32_t x, uint32_t y){
 }
 
 float4 RS_KERNEL getTextureColorFromXY(rs_allocation input, uint32_t x, uint32_t y){
-    float4 g = rsUnpackColor8888(*(const uchar4*)rsGetElementAt(input, x, y));
+    uint32_t trueX = x > imageWidth? imageWidth : (x < 0? 0: x);
+    uint32_t trueY = y > imageHeight? imageHeight : (y < 0? 0: y);
+    float4 g = rsUnpackColor8888(*(const uchar4*)rsGetElementAt(input, trueX, trueY));
     return g;
 }
 uchar4 RS_KERNEL sst(uchar4 in, uint32_t x, uint32_t y){
